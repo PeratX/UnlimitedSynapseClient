@@ -1,0 +1,9 @@
+{
+  "name": "UnlimitedSynapseClient",
+  "version": "1.0.0",
+  "api": 1,
+  "description": "An extensible socket client using UnlimitedSynapseProtocol.",
+  "author": "PeratX",
+  "main": "us\\client\\UnlimitedSynapseClient",
+  "order": 1
+}
