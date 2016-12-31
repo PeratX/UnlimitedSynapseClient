@@ -5,5 +5,5 @@
   "description": "An extensible socket client using UnlimitedSynapseProtocol.",
   "author": "PeratX",
   "main": "us\\client\\UnlimitedSynapseClient",
-  "order": 1
+  "order": 0
 }

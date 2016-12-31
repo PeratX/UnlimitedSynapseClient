@@ -14,45 +14,47 @@
 namespace us\client\network;
 
 use sf\Framework;
+use us\client\Client;
 use us\client\network\packet\DataPacket;
 use us\client\network\protocol\SynapseClient;
 
 class SynapseInterface{
-	private $synapse;
-	private $ip;
+	private $client;
+	private $address;
 	private $port;
 	/** @var SynapseClient */
-	private $client;
+	private $synapseClient;
 	/** @var DataPacket[] */
 	private $packetPool = [];
-	private $connected = true;
 	
-	public function __construct(Synapse $server, string $ip, int $port){
-		$this->synapse = $server;
-		$this->ip = $ip;
+	public function __construct(Client $client, string $address, int $port){
+		$this->client = $client;
+		$this->address = $address;
 		$this->port = $port;
-		$this->registerPackets();
-		$this->client = new SynapseClient(Framework::getInstance()->getLoader()), $port, $ip);
+		$this->packetPool = new \SplFixedArray(256);
+		$this->synapseClient = new SynapseClient(Framework::getInstance()->getLoader(), $port, $address);
 	}
 
 	public function shutdown(){
-		$this->client->shutdown();
+		$this->synapseClient->shutdown();
 	}
 
 	public function putPacket(DataPacket $pk){
 		if(!$pk->isEncoded){
 			$pk->encode();
 		}
-		$this->client->pushMainToThreadPacket($pk->buffer);
-	}
-
-	public function isConnected() : bool{
-		return $this->connected;
+		$this->synapseClient->pushMainToThreadPacket($pk->buffer);
 	}
 
 	public function process(){
-		while(strlen($buffer = $this->client->readThreadToMainPacket()) > 0){
-			$this->handlePacket($buffer);
+		while(strlen($buffer = $this->synapseClient->readThreadToMainPacket()) > 0){
+			switch($buffer){
+				case "disconnected":
+					$this->client->close(Client::CLOSE_REASON_DISCONNECT);
+					break;
+				default:
+					$this->handlePacket($buffer);
+			}
 		}
 	}
 
@@ -76,7 +78,7 @@ class SynapseInterface{
 	public function handlePacket($buffer){
 		if(($pk = $this->getPacket($buffer)) != null){
 			$pk->decode();
-			$this->synapse->handleDataPacket($pk);
+			$this->client->handleDataPacket($pk);
 		}
 	}
 
@@ -86,11 +88,5 @@ class SynapseInterface{
 	 */
 	public function registerPacket($id, $class) {
 		$this->packetPool[$id] = new $class;
-	}
-
-
-	private function registerPackets() {
-		$this->packetPool = new \SplFixedArray(256);
-
 	}
 }

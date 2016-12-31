@@ -13,6 +13,13 @@
 
 namespace us\client;
 
-abstract class Client{
+use us\client\network\packet\DataPacket;
 
+abstract class Client{
+	const CLOSE_REASON_NONE = 0;
+	const CLOSE_REASON_DISCONNECT = 1;
+
+	public abstract function handleDataPacket(DataPacket $packet);
+
+	public abstract function close(int $reason);
 }

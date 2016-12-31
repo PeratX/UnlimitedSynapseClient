@@ -21,7 +21,7 @@ class SynapseSocket{
 	private $interface;
 	private $port;
 
-	public function __construct($port = 10305, $interface = "127.0.0.1"){
+	public function __construct($port = 26666, $interface = "127.0.0.1"){
 		$this->interface = $interface;
 		$this->port = $port;
 		$this->connect();

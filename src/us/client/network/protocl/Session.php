@@ -52,14 +52,17 @@ class Session{
 	}
 
 	private function tick(){
-		$this->update();//TODO: disconnect
-		if(($data = $this->readPacket()) !== null){
-			foreach($data as $pk){
-				$this->server->pushThreadToMainPacket($pk);
+		if($this->update()){
+			if(($data = $this->readPacket()) !== null){
+				foreach($data as $pk){
+					$this->server->pushThreadToMainPacket($pk);
+				}
 			}
-		}
-		while(strlen($data = $this->server->readMainToThreadPacket()) > 0){
-			$this->writePacket($data);
+			while(strlen($data = $this->server->readMainToThreadPacket()) > 0){
+				$this->writePacket($data);
+			}
+		}else{
+			$this->server->pushThreadToMainPacket("disconnected");
 		}
 	}
 
